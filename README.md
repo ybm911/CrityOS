@@ -32,7 +32,7 @@ export PATH="$PATH:/opt/bochs/bin"
 
 启动成功
 
-![xdisplay](https://cdn.jsdelivr.net/gh/ybm911/blog_picture/img/截屏2021-08-17 22.52.43.png)
+![xdisplay](https://cdn.jsdelivr.net/gh/ybm911/blog_picture/img/image-20220523144953449.png)
 
 > 🔥如果自启动失败，可能是 $DISPLAY 变量没有自动设置好
 >
