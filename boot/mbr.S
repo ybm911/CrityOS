@@ -2,11 +2,11 @@
 ;------------------------------------------------------------
 %include "boot.inc"
 SECTION MBR vstart=0x7c00         
-   mov ax,cs      
-   mov ds,ax
-   mov es,ax
-   mov ss,ax
-   mov fs,ax
+   mov ax,cs      ; 使用 cs 的值初始化
+   mov ds,ax      ; 初始化
+   mov es,ax      ; 初始化
+   mov ss,ax      ; 初始化
+   mov fs,ax      ; 初始化
    mov sp,0x7c00
    mov ax,0xb800
    mov gs,ax
@@ -31,25 +31,29 @@ SECTION MBR vstart=0x7c00
 				   ; 下标从0开始，所以0x18=24,0x4f=79
    int     10h                     ; int 10h
 
-   ; 输出字符串:MBR
-   mov byte [gs:0x00],'1'
+   ; 输出字符串:MBR…
+   mov byte [gs:0x00],'M'
    mov byte [gs:0x01],0xA4
 
-   mov byte [gs:0x02],' '
+   mov byte [gs:0x02],'B'
    mov byte [gs:0x03],0xA4
 
-   mov byte [gs:0x04],'M'
+   mov byte [gs:0x04],'R'
    mov byte [gs:0x05],0xA4	   ;A表示绿色背景闪烁，4表示前景色为红色
 
-   mov byte [gs:0x06],'B'
+   mov byte [gs:0x06],'.'
    mov byte [gs:0x07],0xA4
 
-   mov byte [gs:0x08],'R'
+   mov byte [gs:0x08],'.'
    mov byte [gs:0x09],0xA4
-	 
+
+   mov byte [gs:0x08],'.'
+   mov byte [gs:0x09],0xA4
+
+   ; 传递参数
    mov eax,LOADER_START_SECTOR	 ; 起始扇区lba地址
    mov bx,LOADER_BASE_ADDR       ; 写入的地址
-   mov cx,4			 ; 待读入的扇区数
+   mov cx, 3			 ; 待读入的扇区数                                    4修改为3
    call rd_disk_m_16		 ; 以下读取程序的起始部分（一个扇区）
   
    jmp LOADER_BASE_ADDR + 0x300
@@ -65,13 +69,13 @@ rd_disk_m_16:
       mov di,cx		  ;备份cx
 ;读写硬盘:
 ;第1步：设置要读取的扇区数
-      mov dx,0x1f2
+      mov dx,0x1f2      ; 虚拟硬盘属于 ata0，是 Primary 通道，所以其 sector count 寄存器是由 0x1f2 端口来访问的
       mov al,cl
       out dx,al            ;读取的扇区数
 
       mov eax,esi	   ;恢复ax
 
-;第2步：将LBA地址存入0x1f3 ~ 0x1f6
+;第2步：将LBA地址存入0x1f3 ~ 0x1f6                                                  ; P-126
 
       ;LBA地址7~0位写入端口0x1f3
       mov dx,0x1f3                       
@@ -122,5 +126,5 @@ rd_disk_m_16:
       loop .go_on_read
       ret
 
-   times 510-($-$$) db 0
+   times 510-($-$$) db 0      ; 计算偏移
    db 0x55,0xaa
